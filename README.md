@@ -187,16 +187,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Sampurn Samadder**
 
 - GitHub: [@Sampurn17](https://github.com/Sampurn17)
-- LinkedIn: [Your LinkedIn Profile](#) <!-- Add your LinkedIn URL -->
 
-## 🙏 Acknowledgments
-
-- Thanks to all contributors who have helped shape WorkPulse
-- Inspired by modern team management tools
-- Built with ❤️ using the MERN stack
-
----
 
 **Note:** This project is under active development. Features and documentation may change.
 
-For questions or support, please open an issue on GitHub.
+
