@@ -1,8 +1,5 @@
 # WorkPulse
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Status](https://img.shields.io/badge/status-active-success.svg)
-
 > AI-powered multi-tenant team management SaaS built with the MERN stack, featuring task tracking, PDF summarization, and Excel data visualization.
 
 ## 📋 Table of Contents
@@ -177,10 +174,6 @@ Contributions are welcome! Please follow these steps:
 3. Commit your changes (`git commit -m 'Add some amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 👨‍💻 Author
 
