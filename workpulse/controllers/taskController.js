@@ -1,30 +1,35 @@
 const Task = require("../models/Task");
+const Activity = require("../models/activity");
 
 exports.createTask = async (req, res) => {
 
   try {
 
-    const { title, description, teamId, assignedTo } = req.body;
-
     const task = await Task.create({
-      title,
-      description,
-      teamId,
-      assignedTo,
+      ...req.body,
       companyId: req.user.companyId
     });
 
+    // Activity log (safe)
+    try {
+      await Activity.create({
+        user: req.user.id || req.user._id,
+        action: "TASK_CREATED",
+        task: task._id,
+        details: `Task ${task.title} was created`
+      });
+    } catch (err) {
+      console.log("Activity log failed:", err.message);
+    }
+
     res.json(task);
 
-  } catch (error) {
-
-    res.status(500).json({ message: error.message });
-
+  } catch (err) {
+    console.log("Create task error:", err);
+    res.status(500).json({ error: err.message });
   }
 
 };
-
-
 exports.getTasks = async (req, res) => {
   try {
 
@@ -43,22 +48,26 @@ exports.getTasks = async (req, res) => {
 
 
 exports.updateStatus = async (req, res) => {
+
   try {
 
-    const { status } = req.body;
-
-    const task = await Task.findOneAndUpdate(
-      {
-        _id: req.params.id,
-        companyId: req.user.companyId
-      },
-      { status },
+    const task = await Task.findByIdAndUpdate(
+      req.params.id,
+      { status: req.body.status },
       { new: true }
     );
 
+    await Activity.create({
+      user: req.user.id,
+      action: "TASK_STATUS_UPDATED",
+      task: task._id,
+      details: `Task status changed to ${task.status}`
+    });
+
     res.json(task);
 
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
+
 };

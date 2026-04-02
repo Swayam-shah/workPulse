@@ -1,41 +1,69 @@
 const mongoose = require("mongoose");
 
-const taskSchema = new mongoose.Schema(
-{
-  title: {
-    type: String,
-    required: true
-  },
+const taskSchema = new mongoose.Schema({
 
-  description: {
-    type: String
-  },
+    title: String,
 
-  companyId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Company",
-    required: true
-  },
+    description: String,
 
-  teamId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Team",
-    required: true
-  },
+    assignedTo: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    },
 
-  assignedTo: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User"
-  },
+    assignedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    },
 
-  status: {
-    type: String,
-    enum: ["todo", "progress", "done"],
-    default: "todo"
-  }
+    team: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Team"
+    },
 
-},
-{ timestamps: true }
-);
+    percentage: {
+        type: Number,
+        default: 0
+    },
+
+    status: {
+        type: String,
+        enum: ["todo", "in-progress", "completed", "failed"],
+        default: "todo"
+    },
+
+    deadline: {
+        type: Date
+    },
+
+    attachments: [
+        {
+            originalName: String,
+            fileName: String,
+            url: String,
+            mimeType: String,
+            size: Number,
+            uploadedAt: {
+                type: Date,
+                default: Date.now
+            }
+        }
+    ],
+
+    comments: [
+        {
+            text: String,
+            user: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User"
+            },
+            createdAt: {
+                type: Date,
+                default: Date.now
+            }
+        }
+    ]
+
+});
 
 module.exports = mongoose.model("Task", taskSchema);

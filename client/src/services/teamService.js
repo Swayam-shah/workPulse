@@ -9,3 +9,13 @@ export const createTeam = async (data) => {
   const res = await API.post("/team/create", data);
   return res.data;
 };
+
+export const joinTeam = async (joinCode) => {
+  const res = await API.post("/team/join", { joinCode });
+  return res.data;
+};
+
+export const deleteTeam = async (teamId) => {
+  const res = await API.delete(`/team/delete/${teamId}`);
+  return res.data;
+};

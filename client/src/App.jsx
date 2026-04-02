@@ -10,8 +10,6 @@ import Users from "./pages/Users";
 
 function App() {
 
-  const user = JSON.parse(localStorage.getItem("user"));
-
   return (
     <BrowserRouter>
 
@@ -42,9 +40,9 @@ function App() {
         <Route
           path="/teams"
           element={
-            <AdminRoute>
+            <ProtectedRoute>
               <Teams />
-            </AdminRoute>
+            </ProtectedRoute>
           }
         />
 

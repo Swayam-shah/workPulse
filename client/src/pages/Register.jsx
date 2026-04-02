@@ -13,9 +13,12 @@ export default function Register() {
     name: "",
     email: "",
     password: "",
+    confirmPassword: "",
     companyName: "",
     companyCode: ""
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e) => {
     setForm({
@@ -26,6 +29,11 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (form.password !== form.confirmPassword) {
+      alert("Password and confirm password must match");
+      return;
+    }
 
     try {
 
@@ -48,6 +56,21 @@ export default function Register() {
 
       localStorage.setItem("token", data.token);
 
+      const u = data.user;
+      const id = u?._id || u?.id;
+      if (id) {
+        localStorage.setItem("userId", String(id));
+      }
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          id,
+          name: u?.name,
+          email: u?.email,
+          role: u?.role
+        })
+      );
+
       navigate("/dashboard");
 
     } catch (err) {
@@ -57,11 +80,15 @@ export default function Register() {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-slate-900">
+    <div className="relative flex items-center justify-center min-h-screen bg-slate-950 overflow-hidden px-4">
 
-      <div className="bg-slate-800 p-10 rounded-xl border border-slate-700 w-96">
+      <div className="pointer-events-none absolute -top-24 -right-20 w-80 h-80 rounded-full bg-orange-500/20 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-28 -left-20 w-80 h-80 rounded-full bg-cyan-500/10 blur-3xl" />
+      <div className="pointer-events-none absolute top-1/4 left-1/4 w-32 h-32 border border-orange-400/30 rotate-12" />
 
-        <h1 className="text-3xl font-bold text-green-500 mb-6 text-center">
+      <div className="bg-slate-900/90 backdrop-blur p-8 rounded-2xl border border-slate-700 w-full max-w-md shadow-2xl">
+
+        <h1 className="text-3xl font-bold text-orange-400 mb-6 text-center">
           WorkPulse
         </h1>
 
@@ -99,6 +126,7 @@ export default function Register() {
               name="companyName"
               placeholder="Company Name"
               onChange={handleChange}
+              value={form.companyName}
               className="bg-slate-900 border border-slate-700 p-2 rounded text-white"
             />
           )}
@@ -108,6 +136,7 @@ export default function Register() {
               name="companyCode"
               placeholder="Company Code"
               onChange={handleChange}
+              value={form.companyCode}
               className="bg-slate-900 border border-slate-700 p-2 rounded text-white"
             />
           )}
@@ -116,6 +145,7 @@ export default function Register() {
             name="name"
             placeholder="Your Name"
             onChange={handleChange}
+            value={form.name}
             className="bg-slate-900 border border-slate-700 p-2 rounded text-white"
           />
 
@@ -123,16 +153,45 @@ export default function Register() {
             name="email"
             placeholder="Email"
             onChange={handleChange}
+            value={form.email}
             className="bg-slate-900 border border-slate-700 p-2 rounded text-white"
           />
 
-          <input
-            name="password"
-            type="password"
-            placeholder="Password"
-            onChange={handleChange}
-            className="bg-slate-900 border border-slate-700 p-2 rounded text-white"
-          />
+          <div className="relative">
+            <input
+              name="password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              onChange={handleChange}
+              value={form.password}
+              className="bg-slate-900 border border-slate-700 p-2 pr-16 rounded text-white w-full"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((s) => !s)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-xs px-2 py-1 rounded bg-slate-700 text-slate-200 hover:bg-slate-600"
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
+
+          <div className="relative">
+            <input
+              name="confirmPassword"
+              type={showConfirmPassword ? "text" : "password"}
+              placeholder="Confirm Password"
+              onChange={handleChange}
+              value={form.confirmPassword}
+              className="bg-slate-900 border border-slate-700 p-2 pr-16 rounded text-white w-full"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword((s) => !s)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-xs px-2 py-1 rounded bg-slate-700 text-slate-200 hover:bg-slate-600"
+            >
+              {showConfirmPassword ? "Hide" : "Show"}
+            </button>
+          </div>
 
           <button
             type="submit"
