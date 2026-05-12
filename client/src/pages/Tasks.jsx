@@ -7,6 +7,7 @@ import { getTeams } from "../services/teamService";
 import API from "../api/axios";
 import Layout from "../components/Layout";
 import TaskComments from "../components/TaskComments";
+import { summarizeDocument } from "../services/aiService";
 
 const MAX_FILES = 10;
 const MAX_FILE_SIZE_BYTES = 100 * 1024 * 1024; // 100MB
@@ -590,7 +591,7 @@ function TimeSelect({ name, value, onChange, className = "" }) {
 
 function officeSubtype(name = "") {
   if (/\.docx$/i.test(name)) return "docx";
-  if (/\.(xls|xlsx)$/i.test(name)) return "sheet";
+  if (/\.(xls|xlsx|csv)$/i.test(name)) return "sheet";
   if (/\.pptx$/i.test(name)) return "pptx";
   if (/\.(doc|ppt)$/i.test(name)) return "legacy";
   return "unknown";
@@ -793,6 +794,8 @@ export default function Tasks() {
     activeSheet: 0,
     error: ""
   });
+  const [aiSummary, setAiSummary] = useState(null);
+  const [isAiSummarizing, setIsAiSummarizing] = useState(false);
 
   const createFileInputRef = useRef(null);
   const editFileInputRef = useRef(null);
@@ -948,7 +951,8 @@ export default function Tasks() {
           });
 
           pptxInstanceRef.current = viewer;
-          await viewer.preview(data);
+          // pptx-preview requires Uint8Array, not raw ArrayBuffer
+          await viewer.preview(new Uint8Array(data));
           if (cancelled) return;
 
           setOfficePreview({
@@ -1264,7 +1268,11 @@ export default function Tasks() {
     });
   };
 
-  const closeAttachmentPreview = () => setAttachmentPreview(null);
+  const closeAttachmentPreview = () => {
+    setAttachmentPreview(null);
+    setAiSummary(null);
+    setIsAiSummarizing(false);
+  };
 
   const openPreviewInNewTab = () => {
     if (!attachmentPreview) return;
@@ -1275,9 +1283,13 @@ export default function Tasks() {
     if (/\.(mp4|webm|mov|avi)$/i.test(name)) return "video";
     if (/\.(mp3)$/i.test(name)) return "audio";
     if (/\.(pdf)$/i.test(name)) return "pdf";
-    if (/\.(doc|docx|ppt|pptx|xls|xlsx)$/i.test(name)) return "office";
+    if (/\.(doc|docx|ppt|pptx|xls|xlsx|csv)$/i.test(name)) return "office";
     return "file";
   };
+
+  // Extensions the AI summarize backend supports
+  const canAiSummarize = (name = "") =>
+    /\.(pdf|xlsx|xls|csv|docx|pptx|png|jpg|jpeg|gif|webp|txt)$/i.test(name);
 
   return (
     <Layout>
@@ -1540,6 +1552,35 @@ export default function Tasks() {
             <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-slate-700">
               <p className="text-white text-sm truncate">{attachmentPreview.name}</p>
               <div className="flex gap-2">
+                {canAiSummarize(attachmentPreview.name) && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                       setIsAiSummarizing(true);
+                       setAiSummary(null);
+                       const res = await fetch(attachmentPreview.url);
+                       if (!res.ok) throw new Error("Could not fetch the file for summarization");
+                       const blob = await res.blob();
+                       const summary = await summarizeDocument(blob, attachmentPreview.name);
+                       setAiSummary(summary);
+                    } catch (e) {
+                       const msg = e.response?.data?.error || e.response?.data?.details || e.message || "Unknown error";
+                       alert("AI Summarize failed: " + msg);
+                    } finally {
+                       setIsAiSummarizing(false);
+                    }
+                  }}
+                  disabled={isAiSummarizing}
+                  className="bg-purple-600 hover:bg-purple-500 text-white text-xs px-3 py-1 rounded disabled:opacity-50 flex items-center gap-1 font-medium transition"
+                >
+                  {isAiSummarizing ? (
+                    <span className="flex items-center gap-1">⏳ Summarizing...</span>
+                  ) : (
+                    <span className="flex items-center gap-1">✨ AI Summarize</span>
+                  )}
+                </button>
+                )}
                 <button
                   type="button"
                   onClick={openPreviewInNewTab}
@@ -1557,7 +1598,19 @@ export default function Tasks() {
               </div>
             </div>
 
-            <div className="flex-1 bg-slate-950/80 p-4 overflow-hidden">
+            <div className="flex-1 bg-slate-950/80 p-4 overflow-hidden overflow-y-auto">
+              
+              {aiSummary && (
+                <div className="mb-4 bg-purple-900/30 border border-purple-500/50 rounded-lg p-4">
+                  <h3 className="text-purple-300 font-bold mb-2 flex items-center gap-2">
+                    ✨ AI Interpretation & Summary
+                  </h3>
+                  <div className="text-slate-200 text-sm whitespace-pre-wrap leading-relaxed">
+                    {aiSummary}
+                  </div>
+                </div>
+              )}
+
               {previewKind(attachmentPreview.name) === "video" ? (
                 <video
                   src={attachmentPreview.url}
