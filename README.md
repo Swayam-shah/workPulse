@@ -177,6 +177,11 @@ Contributions are welcome! Please follow these steps:
 
 ## 👨‍💻 Author
 
+**Swayam Shah**
+
+- GitHub: [@Swayam-shah](https://github.com/Swayam-shah)
+
+
 **Sampurn Samadder**
 
 - GitHub: [@Sampurn17](https://github.com/Sampurn17)
